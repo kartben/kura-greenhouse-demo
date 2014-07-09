@@ -1,0 +1,164 @@
+/**
+ * Copyright (c) 2014 Eclipse Foundation
+ *
+ *  All rights reserved. This program and the accompanying materials
+ *  are made available under the terms of the Eclipse Public License v1.0
+ *  which accompanies this distribution, and is available at
+ *  http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Benjamin Cabé, Eclipse Foundation
+ */
+package org.eclipse.iot.greenhouse.publisher;
+
+import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import org.eclipse.kura.KuraException;
+import org.eclipse.kura.KuraNotConnectedException;
+import org.eclipse.kura.KuraTimeoutException;
+import org.eclipse.kura.configuration.ConfigurableComponent;
+import org.eclipse.kura.data.DataService;
+import org.eclipse.kura.data.DataServiceListener;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class GreenhousePublisher implements ConfigurableComponent,
+		DataServiceListener, EventHandler {
+	private static final Logger s_logger = LoggerFactory
+			.getLogger(GreenhousePublisher.class);
+
+	private static final String PUBLISH_TOPICPREFIX_PROP_NAME = "publish.appTopicPrefix";
+	private static final String PUBLISH_QOS_PROP_NAME = "publish.qos";
+	private static final String PUBLISH_RETAIN_PROP_NAME = "publish.retain";
+
+	private DataService _dataService;
+
+	private Map<String, Object> _properties;
+
+	// ----------------------------------------------------------------
+	//
+	// Dependencies
+	//
+	// ----------------------------------------------------------------
+
+	public GreenhousePublisher() {
+		super();
+	}
+
+	public void setDataService(DataService dataService) {
+		_dataService = dataService;
+	}
+
+	public void unsetDataService(DataService dataService) {
+		_dataService = null;
+	}
+
+	// ----------------------------------------------------------------
+	//
+	// Activation APIs
+	//
+	// ----------------------------------------------------------------
+
+	protected void activate(ComponentContext componentContext,
+			Map<String, Object> properties) {
+		_properties = properties;
+		s_logger.info("Activating GreenhousePublisher... Done.");
+	}
+
+	protected void deactivate(ComponentContext componentContext) {
+		s_logger.debug("Deactivating GreenhousePublisher... Done.");
+	}
+
+	public void updated(Map<String, Object> properties) {
+		_properties = properties;
+	}
+
+	@Override
+	public void onConnectionEstablished() {
+		try {
+			_dataService.subscribe("test/#", 0);
+		} catch (KuraTimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (KuraNotConnectedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (KuraException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void onDisconnecting() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onDisconnected() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onConnectionLost(Throwable cause) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onMessageArrived(String topic, byte[] payload, int qos,
+			boolean retained) {
+		System.out.println("Topic --> " + topic);
+
+	}
+
+	@Override
+	public void onMessagePublished(int messageId, String topic) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onMessageConfirmed(int messageId, String topic) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void handleEvent(Event event) {
+		// fetch the publishing configuration from the publishing properties
+
+		// replace first segment of the topic, which is meant to remain internal
+		// by the prefix specified in the component configuration
+		String topic = event.getTopic();
+		String prefix = (String) _properties.get(PUBLISH_TOPICPREFIX_PROP_NAME);
+		topic = topic.replaceFirst(".*?/", prefix);
+
+		Integer qos = (Integer) _properties.get(PUBLISH_QOS_PROP_NAME);
+		Boolean retain = (Boolean) _properties.get(PUBLISH_RETAIN_PROP_NAME);
+
+		// Increment the simulated temperature value
+		Object sensorData = event.getProperty("sensorvalue");
+
+		// Publish the message
+		try {
+			String payload = sensorData.toString();
+
+			int messageId = _dataService.publish(topic, payload.getBytes(),
+					qos, retain, 2);
+			s_logger.info("Published to {} message: {} with ID: {}",
+					new Object[] { topic, payload, messageId });
+		} catch (Exception e) {
+			s_logger.error("Cannot publish topic: " + topic, e);
+		}
+	}
+
+}
