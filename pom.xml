@@ -58,16 +58,6 @@
 				</repository>
 			</repositories>
 		</profile>
-		<profile>
-			<id>can</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<modules>
-				<module>org.eclipse.kura.protocol.can</module>
-				<module>org.eclipse.kura.protocol.can.test</module>
-			</modules>
-		</profile>
 	</profiles>
 
 	<repositories>
