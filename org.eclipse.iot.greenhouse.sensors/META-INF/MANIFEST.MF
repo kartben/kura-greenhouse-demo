@@ -14,3 +14,4 @@ Import-Package: org.eclipse.kura,
  org.osgi.service.event;version="1.3.0",
  org.slf4j;version="1.6.4"
 Bundle-ClassPath: .
+Export-Package: org.eclipse.iot.greenhouse.sensors

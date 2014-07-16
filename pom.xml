@@ -12,6 +12,8 @@
 		<module>org.eclipse.iot.greenhouse.coap</module>
 		<module>org.eclipse.iot.greenhouse.publisher</module>
 		<module>org.eclipse.iot.greenhouse.sensors</module>
+		<module>org.eclipse.iot.greenhouse.sensors.simulator</module>
+		<module>org.eclipse.iot.greenhouse.sensors.raspberrypi</module>
 	</modules>
 
 	<properties>

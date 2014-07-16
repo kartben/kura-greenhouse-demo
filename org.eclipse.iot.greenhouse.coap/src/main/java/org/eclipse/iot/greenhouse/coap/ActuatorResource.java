@@ -1,23 +1,21 @@
 package org.eclipse.iot.greenhouse.coap;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.osgi.service.event.Event;
-import org.osgi.service.event.EventAdmin;
+import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService;
+import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService.NoSuchSensorOrActuatorException;
 
 public class ActuatorResource extends CoapResource {
-	private EventAdmin _eventAdmin;
+	private GreenhouseSensorService _greenhouseSensorService;
 	// an actuator might also allow its status to be GET, in that case it has an
 	// associated SensorResource
 	private SensorResource _sensorResource;
 
-	public ActuatorResource(String name, EventAdmin eventAdmin) {
+	public ActuatorResource(String name,
+			GreenhouseSensorService greenhouseSensorService) {
 		super(name);
-		_eventAdmin = eventAdmin;
+		_greenhouseSensorService = greenhouseSensorService;
 	}
 
 	@Override
@@ -31,17 +29,12 @@ public class ActuatorResource extends CoapResource {
 	public void handlePUT(CoapExchange exchange) {
 		String command = exchange.getRequestText();
 
-		Map<String, Object> dict = new HashMap<String, Object>();
-		dict.put("command", command);
-
-		// publish an event to update the actuator
-		Event event = new Event("greenhouse-control/actuators/" + getName(),
-				dict);
-		_eventAdmin.postEvent(event);
-
-		// not sure we want to do this?
-		if (_sensorResource != null) {
-			_sensorResource.setSensorValue(command);
+		// XXX FIXME :)
+		try {
+			_greenhouseSensorService.setActuatorValue("light", true);
+		} catch (NoSuchSensorOrActuatorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		exchange.respond(ResponseCode.CHANGED);

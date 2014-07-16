@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" 
+    name="org.eclipse.iot.greenhouse.sensors.raspberrypi.GreenhouseSensorsMockService" 
+    enabled="true"
+    immediate="true">
+	<implementation class="org.eclipse.iot.greenhouse.sensors.raspberrypi.Pi4JGreenhouseSensorService"/>
+
+   <service>
+      <provide interface="org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService"/>
+   </service>
+   
+</scr:component>

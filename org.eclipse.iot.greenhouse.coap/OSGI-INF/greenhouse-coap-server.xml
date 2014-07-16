@@ -16,16 +16,10 @@
     name="org.eclipse.iot.greenhouse.coap.GreenhouseCoapServer"
     activate="activate" 
     deactivate="deactivate" 
-    modified="updated" 
     enabled="true"
-    immediate="true"
-    configuration-policy="optional">
+    immediate="true">
 	<implementation class="org.eclipse.iot.greenhouse.coap.GreenhouseCoapServer"/>
+ <reference bind="setGreenhouseSensorService" cardinality="1..1" interface="org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService" name="GreenhouseSensorService" policy="static" unbind="unsetGreenhouseSensorService"/>
 
-   <service>
-       <provide interface="org.osgi.service.event.EventHandler"/>
-   </service>
-   <reference bind="setEventAdmin" cardinality="1..1" interface="org.osgi.service.event.EventAdmin" name="EventAdmin" policy="static" unbind="unsetEventAdmin"/>
-   <property name="event.topics" type="String" value="greenhouse-control/*"/>
    
 </scr:component>

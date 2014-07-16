@@ -11,37 +11,28 @@
  */
 package org.eclipse.iot.greenhouse.coap;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
+import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService;
+import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService.NoSuchSensorOrActuatorException;
 import org.eclipse.kura.configuration.ConfigurableComponent;
 import org.osgi.service.component.ComponentContext;
-import org.osgi.service.event.Event;
-import org.osgi.service.event.EventAdmin;
-import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GreenhouseCoapServer implements ConfigurableComponent,
-		EventHandler {
+		GreenhouseSensorService.SensorChangedListener {
 	private static final Logger s_logger = LoggerFactory
 			.getLogger(GreenhouseCoapServer.class);
-
-	private Map<String, Object> _properties;
-
 	private CoapServer _coapServer;
 
 	private CoapResource _greenhouseResource;
 
-	private CoapResource _sensorsResource;
-	private Map<String, SensorResource> _sensorsResources = new HashMap<String, SensorResource>();
+	private CoapResource _sensorsRootResource;
 
-	private CoapResource _actuatorsResource;
-	private Map<String, ActuatorResource> _actuatorsResources = new HashMap<String, ActuatorResource>();
+	private CoapResource _actuatorsRootResource;
 
-	private EventAdmin _eventAdmin;
+	private GreenhouseSensorService _greenhouseSensorService;
 
 	// ----------------------------------------------------------------
 	//
@@ -53,18 +44,22 @@ public class GreenhouseCoapServer implements ConfigurableComponent,
 		super();
 
 		_greenhouseResource = new CoapResource("greenhouse");
-		_sensorsResource = new CoapResource("sensors");
-		_actuatorsResource = new CoapResource("actuators");
+		_sensorsRootResource = new CoapResource("sensors");
+		_actuatorsRootResource = new CoapResource("actuators");
 
-		_greenhouseResource.add(_sensorsResource, _actuatorsResource);
+		_greenhouseResource.add(_sensorsRootResource, _actuatorsRootResource);
 	}
 
-	protected void setEventAdmin(EventAdmin eventAdmin) {
-		_eventAdmin = eventAdmin;
+	protected void setGreenhouseSensorService(
+			GreenhouseSensorService greenhouseSensorService) {
+		_greenhouseSensorService = greenhouseSensorService;
+		_greenhouseSensorService.addSensorChangedListener(this);
 	}
 
-	protected void unsetEventAdmin(EventAdmin eventAdmin) {
-		_eventAdmin = null;
+	protected void unsetGreenhouseSensorService(
+			GreenhouseSensorService greenhouseSensorService) {
+		_greenhouseSensorService.removeSensorChangedListener(this);
+		_greenhouseSensorService = null;
 	}
 
 	// ----------------------------------------------------------------
@@ -82,16 +77,25 @@ public class GreenhouseCoapServer implements ConfigurableComponent,
 
 		// create the actuator/sensor combo for the light
 		ActuatorResource lightActuator = new ActuatorResource("light",
-				_eventAdmin);
+				_greenhouseSensorService);
 		SensorResource lightSensor = new SensorResource("light");
 		// TODO remove line below
 		lightSensor.setSensorValue("on");
 		lightActuator.setSensorResource(lightSensor);
-		_sensorsResource.add(lightSensor);
-		_sensorsResources.put("light",lightSensor);
-		
-		_actuatorsResource.add(lightActuator);
-		_actuatorsResources.put("light", lightActuator);
+		_sensorsRootResource.add(lightSensor);
+		_actuatorsRootResource.add(lightActuator);
+
+		// add the temperature sensor
+		try {
+			SensorResource temperatureResource = new SensorResource(
+					"temperature");
+			temperatureResource.setSensorValue(""
+					+ _greenhouseSensorService.getSensorValue("temperature"));
+			_sensorsRootResource.add(temperatureResource);
+		} catch (NoSuchSensorOrActuatorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		s_logger.info("Activating GreenhouseCoapServer... Done.");
 	}
@@ -105,20 +109,12 @@ public class GreenhouseCoapServer implements ConfigurableComponent,
 	}
 
 	@Override
-	public void handleEvent(Event event) {
-		// topic looks like "greenhouse-control/sensors/{sensor-name}"
-		String topic = event.getTopic();
-		String sensorName = topic.substring(topic.lastIndexOf("/") + 1);
-
-		if (!_sensorsResources.containsKey(sensorName)) {
-			SensorResource s = new SensorResource(sensorName);
-			_sensorsResource.add(s);
-			_sensorsResources.put(sensorName, s);
+	public void sensorChanged(String sensorName, Object newValue) {
+		SensorResource sensorResource = (SensorResource) _sensorsRootResource
+				.getChild(sensorName);
+		if (sensorResource != null) {
+			sensorResource.setSensorValue(newValue.toString());
 		}
-
-		_sensorsResources.get(sensorName).setSensorValue(
-				event.getProperty("sensorvalue").toString());
-
 	}
 
 }

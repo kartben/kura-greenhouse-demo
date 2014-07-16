@@ -12,10 +12,9 @@
 package org.eclipse.iot.greenhouse.publisher;
 
 import java.util.Map;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
+import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService;
+import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService.SensorChangedListener;
 import org.eclipse.kura.KuraException;
 import org.eclipse.kura.KuraNotConnectedException;
 import org.eclipse.kura.KuraTimeoutException;
@@ -23,13 +22,11 @@ import org.eclipse.kura.configuration.ConfigurableComponent;
 import org.eclipse.kura.data.DataService;
 import org.eclipse.kura.data.DataServiceListener;
 import org.osgi.service.component.ComponentContext;
-import org.osgi.service.event.Event;
-import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GreenhousePublisher implements ConfigurableComponent,
-		DataServiceListener, EventHandler {
+		DataServiceListener, SensorChangedListener {
 	private static final Logger s_logger = LoggerFactory
 			.getLogger(GreenhousePublisher.class);
 
@@ -38,6 +35,7 @@ public class GreenhousePublisher implements ConfigurableComponent,
 	private static final String PUBLISH_RETAIN_PROP_NAME = "publish.retain";
 
 	private DataService _dataService;
+	private GreenhouseSensorService _greenhouseSensorService;
 
 	private Map<String, Object> _properties;
 
@@ -49,6 +47,18 @@ public class GreenhousePublisher implements ConfigurableComponent,
 
 	public GreenhousePublisher() {
 		super();
+	}
+
+	protected void setGreenhouseSensorService(
+			GreenhouseSensorService greenhouseSensorService) {
+		_greenhouseSensorService = greenhouseSensorService;
+		_greenhouseSensorService.addSensorChangedListener(this);
+	}
+
+	protected void unsetGreenhouseSensorService(
+			GreenhouseSensorService greenhouseSensorService) {
+		_greenhouseSensorService.removeSensorChangedListener(this);
+		_greenhouseSensorService = null;
 	}
 
 	public void setDataService(DataService dataService) {
@@ -133,24 +143,16 @@ public class GreenhousePublisher implements ConfigurableComponent,
 	}
 
 	@Override
-	public void handleEvent(Event event) {
-		// fetch the publishing configuration from the publishing properties
-
-		// replace first segment of the topic, which is meant to remain internal
-		// by the prefix specified in the component configuration
-		String topic = event.getTopic();
+	public void sensorChanged(String sensorName, Object newValue) {
+		// Publish the message
 		String prefix = (String) _properties.get(PUBLISH_TOPICPREFIX_PROP_NAME);
-		topic = topic.replaceFirst(".*?/", prefix);
-
 		Integer qos = (Integer) _properties.get(PUBLISH_QOS_PROP_NAME);
 		Boolean retain = (Boolean) _properties.get(PUBLISH_RETAIN_PROP_NAME);
 
-		// Increment the simulated temperature value
-		Object sensorData = event.getProperty("sensorvalue");
+		String topic = prefix + "sensors/" + sensorName;
+		String payload = newValue.toString();
 
-		// Publish the message
 		try {
-			String payload = sensorData.toString();
 
 			int messageId = _dataService.publish(topic, payload.getBytes(),
 					qos, retain, 2);
@@ -160,5 +162,4 @@ public class GreenhousePublisher implements ConfigurableComponent,
 			s_logger.error("Cannot publish topic: " + topic, e);
 		}
 	}
-
 }
