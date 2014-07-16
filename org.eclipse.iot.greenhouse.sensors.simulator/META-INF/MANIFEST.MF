@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: org.eclipse.iot.greenhouse.sensors.simulator
 Bundle-SymbolicName: org.eclipse.iot.greenhouse.sensors.simulator;singleton:=true
-Bundle-Version: 0.2.0.SNAPSHOT
+Bundle-Version: 0.1.0.SNAPSHOT
 Bundle-Vendor: Eclipse Foundation
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Service-Component: OSGI-INF/*.xml
