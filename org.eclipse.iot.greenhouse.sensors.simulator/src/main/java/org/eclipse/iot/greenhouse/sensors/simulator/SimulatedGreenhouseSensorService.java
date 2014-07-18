@@ -18,7 +18,7 @@ public class SimulatedGreenhouseSensorService implements
 	private List<SensorChangedListener> _listeners = new CopyOnWriteArrayList<SensorChangedListener>();
 
 	float _temperature = 20;
-	boolean _lightState = false;
+	String _lightState = "on";
 
 	public SimulatedGreenhouseSensorService() {
 		super();
@@ -31,7 +31,8 @@ public class SimulatedGreenhouseSensorService implements
 						_temperature = 20 + new Random().nextFloat() * 10;
 						notifyListeners("temperature", _temperature);
 
-						_lightState = new Random().nextInt(10) < 8;
+						_lightState = (new Random().nextInt(10) < 8) ? "on"
+								: "off";
 						notifyListeners("light", _lightState);
 					}
 				}, 0, 1000, TimeUnit.MILLISECONDS);
@@ -53,7 +54,7 @@ public class SimulatedGreenhouseSensorService implements
 	public void setActuatorValue(String actuatorName, Object value)
 			throws NoSuchSensorOrActuatorException {
 		if ("light".equals(actuatorName)) {
-			_lightState = (Boolean) value;
+			_lightState = (String) value;
 			notifyListeners("light", value);
 		} else
 			throw new GreenhouseSensorService.NoSuchSensorOrActuatorException();
