@@ -29,9 +29,8 @@ public class ActuatorResource extends CoapResource {
 	public void handlePUT(CoapExchange exchange) {
 		String command = exchange.getRequestText();
 
-		// XXX FIXME :)
 		try {
-			_greenhouseSensorService.setActuatorValue("light", true);
+			_greenhouseSensorService.setActuatorValue("light", command);
 		} catch (NoSuchSensorOrActuatorException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

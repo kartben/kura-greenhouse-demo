@@ -23,8 +23,7 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 	private GpioController _gpioController;
 	private GpioPinDigitalMultipurpose _lightActuator;
 
-	public Pi4JGreenhouseSensorService() {
-		super();
+	protected void activate() {
 		try {
 			_gpioController = GpioFactory.getInstance();
 			_i2cbus = I2CFactory.getInstance(I2CBus.BUS_1);
@@ -37,7 +36,12 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
 
+	protected void deactivate() {
+		if (_gpioController != null) {
+			_gpioController.shutdown();
+		}
 	}
 
 	@Override
@@ -73,8 +77,11 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 
 		// Read the upper and lower bytes of the temperature value from
 		// DATAh and DATAl (registers 0x01 and 0x02), respectively
-		int dataH = _temperatureSensor.read(0x01);
-		int dataL = _temperatureSensor.read(0x02);
+		byte[] buffer = new byte[2];
+		_temperatureSensor.read(buffer, 0, 3);
+
+		int dataH = buffer[1];
+		int dataL = buffer[1];
 
 		temperature = ((dataH << 8) + dataL) >> 2;
 		temperature = (temperature / 32) - 50;
@@ -90,11 +97,11 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 	public void setActuatorValue(String actuatorName, Object value)
 			throws NoSuchSensorOrActuatorException {
 		if ("light".equals(actuatorName)) {
-			_lightActuator.setState((Boolean) value);
+			_lightActuator.setState("on".equals(value));
 			notifyListeners("light", value);
-		} else
+		} else {
 			throw new GreenhouseSensorService.NoSuchSensorOrActuatorException();
-
+		}
 	}
 
 	@Override
