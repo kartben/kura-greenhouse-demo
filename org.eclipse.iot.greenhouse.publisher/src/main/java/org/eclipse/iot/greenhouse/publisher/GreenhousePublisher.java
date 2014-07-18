@@ -14,6 +14,7 @@ package org.eclipse.iot.greenhouse.publisher;
 import java.util.Map;
 
 import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService;
+import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService.NoSuchSensorOrActuatorException;
 import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService.SensorChangedListener;
 import org.eclipse.kura.KuraException;
 import org.eclipse.kura.KuraNotConnectedException;
@@ -92,7 +93,10 @@ public class GreenhousePublisher implements ConfigurableComponent,
 	@Override
 	public void onConnectionEstablished() {
 		try {
-			_dataService.subscribe("test/#", 0);
+			String prefix = (String) _properties
+					.get(PUBLISH_TOPICPREFIX_PROP_NAME);
+
+			_dataService.subscribe(prefix + "#", 0);
 		} catch (KuraTimeoutException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -126,8 +130,31 @@ public class GreenhousePublisher implements ConfigurableComponent,
 	@Override
 	public void onMessageArrived(String topic, byte[] payload, int qos,
 			boolean retained) {
-		System.out.println("Topic --> " + topic);
+		String prefix = (String) _properties.get(PUBLISH_TOPICPREFIX_PROP_NAME);
 
+		if (!topic.startsWith(prefix)) {
+			return;
+		}
+
+		String[] topicFragments = topic.split("/");
+		// topicFragments[0] == {appSetting.topic_prefix}
+		// topicFragments[1] == {unique_id}
+		// topicFragments[2] == "actuators"
+		// topicFragments[3] == {actuatorName} (e.g. light)
+
+		if (topicFragments.length != 4)
+			return;
+
+		if (topicFragments[2].equals("actuators")
+				&& topicFragments[3].equals("light")) {
+			try {
+				_greenhouseSensorService.setActuatorValue("light", new String(
+						payload));
+			} catch (NoSuchSensorOrActuatorException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	@Override
