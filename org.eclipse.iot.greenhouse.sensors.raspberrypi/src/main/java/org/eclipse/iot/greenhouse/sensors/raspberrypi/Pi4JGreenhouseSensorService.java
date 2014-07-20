@@ -3,6 +3,9 @@ package org.eclipse.iot.greenhouse.sensors.raspberrypi;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService;
 
@@ -23,6 +26,11 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 	private GpioController _gpioController;
 	private GpioPinDigitalMultipurpose _lightActuator;
 
+	private float _temperatureRef = Float.MIN_VALUE;
+
+	private ScheduledThreadPoolExecutor _scheduledThreadPoolExecutor;
+	private ScheduledFuture<?> _handle;
+
 	protected void activate() {
 		try {
 			_gpioController = GpioFactory.getInstance();
@@ -31,6 +39,27 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 			_temperatureSensor = _i2cbus.getDevice(0x40);
 			_lightActuator = _gpioController.provisionDigitalMultipurposePin(
 					RaspiPin.GPIO_00, "led", PinMode.DIGITAL_OUTPUT);
+
+			// monitor temperature changes
+			// every change of more than 0.1C will notify SensorChangedListeners
+			_scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
+			_handle = _scheduledThreadPoolExecutor.scheduleAtFixedRate(
+					new Runnable() {
+						@Override
+						public void run() {
+							try {
+								float newTemperature = readTemperature();
+								if (Math.abs(_temperatureRef - newTemperature) > .1f) {
+									notifyListeners("temperature",
+											newTemperature);
+									_temperatureRef = newTemperature;
+								}
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+					}, 0, 100, TimeUnit.MILLISECONDS);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -41,6 +70,10 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 	protected void deactivate() {
 		if (_gpioController != null) {
 			_gpioController.shutdown();
+		}
+
+		if (_handle != null) {
+			_handle.cancel(true);
 		}
 	}
 
@@ -77,14 +110,14 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 
 		// Read the upper and lower bytes of the temperature value from
 		// DATAh and DATAl (registers 0x01 and 0x02), respectively
-		byte[] buffer = new byte[2];
+		byte[] buffer = new byte[3];
 		_temperatureSensor.read(buffer, 0, 3);
 
 		int dataH = buffer[1];
-		int dataL = buffer[1];
+		int dataL = buffer[2];
 
 		temperature = ((dataH << 8) + dataL) >> 2;
-		temperature = (temperature / 32) - 50;
+		temperature = (temperature / 32f) - 50f;
 
 		return temperature;
 	}
