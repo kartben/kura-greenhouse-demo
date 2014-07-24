@@ -42,9 +42,9 @@ public class GreenhouseCoapServer implements
 	public GreenhouseCoapServer() {
 		super();
 
-		_greenhouseResource = new CoapResource("greenhouse");
-		_sensorsRootResource = new CoapResource("sensors");
-		_actuatorsRootResource = new CoapResource("actuators");
+		_greenhouseResource = new CoapResource("gh");
+		_sensorsRootResource = new CoapResource("sens");
+		_actuatorsRootResource = new CoapResource("act");
 
 		_greenhouseResource.add(_sensorsRootResource, _actuatorsRootResource);
 	}
@@ -86,8 +86,7 @@ public class GreenhouseCoapServer implements
 
 		// add the temperature sensor
 		try {
-			SensorResource temperatureResource = new SensorResource(
-					"temperature");
+			SensorResource temperatureResource = new SensorResource("temp");
 			temperatureResource.setSensorValue(""
 					+ _greenhouseSensorService.getSensorValue("temperature"));
 			_sensorsRootResource.add(temperatureResource);
