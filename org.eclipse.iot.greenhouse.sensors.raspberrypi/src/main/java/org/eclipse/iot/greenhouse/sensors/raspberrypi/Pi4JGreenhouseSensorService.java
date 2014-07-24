@@ -1,6 +1,7 @@
 package org.eclipse.iot.greenhouse.sensors.raspberrypi;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
@@ -119,7 +120,9 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 		temperature = ((dataH << 8) + dataL) >> 2;
 		temperature = (temperature / 32f) - 50f;
 
-		return temperature;
+		// truncate to 2 decimals
+		DecimalFormat twoDForm = new DecimalFormat("#.##");
+		return Float.valueOf(twoDForm.format(temperature));
 	}
 
 	private boolean readLightState() {
