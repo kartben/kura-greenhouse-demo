@@ -9,6 +9,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
@@ -20,6 +22,8 @@ import com.pi4j.io.i2c.I2CDevice;
 import com.pi4j.io.i2c.I2CFactory;
 
 public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
+	private static final Logger s_logger = LoggerFactory
+			.getLogger(Pi4JGreenhouseSensorService.class);
 
 	private List<SensorChangedListener> _listeners = new CopyOnWriteArrayList<SensorChangedListener>();
 	private I2CBus _i2cbus;
@@ -40,6 +44,7 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 			_temperatureSensor = _i2cbus.getDevice(0x40);
 			_lightActuator = _gpioController.provisionDigitalMultipurposePin(
 					RaspiPin.GPIO_00, "led", PinMode.DIGITAL_OUTPUT);
+			_lightActuator.setShutdownOptions(true); // unexport on shutdown
 
 			// monitor temperature changes
 			// every change of more than 0.1C will notify SensorChangedListeners
@@ -69,13 +74,21 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 	}
 
 	protected void deactivate() {
+		s_logger.info("Deactivating Pi4JGreenhouseSensorService...");
+
 		if (_gpioController != null) {
+			s_logger.info("... unexport all GPIOs");
+			_gpioController.unexportAll();
+			s_logger.info("... shutdown");
 			_gpioController.shutdown();
+			s_logger.info("... DONE.");
 		}
 
 		if (_handle != null) {
 			_handle.cancel(true);
 		}
+
+		s_logger.info("Deactivating Pi4JGreenhouseSensorService... Done.");
 	}
 
 	@Override
@@ -97,11 +110,18 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 	 * See sensor documentation here:
 	 * http://www.hoperf.cn/upload/sensor/TH02_V1.1.pdf
 	 */
-	private float readTemperature() throws IOException {
+	private synchronized float readTemperature() throws IOException {
 		float temperature;
 		// Set START (D0) and TEMP (D4) in CONFIG (register 0x03) to begin a
 		// new conversion, i.e., write CONFIG with 0x11
 		_temperatureSensor.write(0x03, (byte) 0x11);
+
+		try {
+			// waiting a bit to try to avoid getting erroneous readings once in
+			// a while
+			Thread.sleep(50);
+		} catch (InterruptedException e) {
+		}
 
 		// Poll RDY (D0) in STATUS (register 0) until it is low (=0)
 		int status = -1;
