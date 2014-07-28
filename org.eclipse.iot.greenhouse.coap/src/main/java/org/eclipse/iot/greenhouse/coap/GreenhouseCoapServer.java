@@ -15,12 +15,12 @@ import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService;
 import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService.NoSuchSensorOrActuatorException;
+import org.eclipse.iot.greenhouse.sensors.SensorChangedListener;
 import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GreenhouseCoapServer implements
-		GreenhouseSensorService.SensorChangedListener {
+public class GreenhouseCoapServer implements SensorChangedListener {
 	private static final Logger s_logger = LoggerFactory
 			.getLogger(GreenhouseCoapServer.class);
 	private CoapServer _coapServer;
@@ -52,12 +52,10 @@ public class GreenhouseCoapServer implements
 	protected void setGreenhouseSensorService(
 			GreenhouseSensorService greenhouseSensorService) {
 		_greenhouseSensorService = greenhouseSensorService;
-		_greenhouseSensorService.addSensorChangedListener(this);
 	}
 
 	protected void unsetGreenhouseSensorService(
 			GreenhouseSensorService greenhouseSensorService) {
-		_greenhouseSensorService.removeSensorChangedListener(this);
 		_greenhouseSensorService = null;
 	}
 

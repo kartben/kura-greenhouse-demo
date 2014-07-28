@@ -27,6 +27,7 @@
    <service>
        <provide interface="org.eclipse.iot.greenhouse.publisher.GreenhousePublisher"/>
        <provide interface="org.eclipse.kura.data.DataServiceListener"/>
+       <provide interface="org.eclipse.iot.greenhouse.sensors.SensorChangedListener"/>
    </service>
    <reference bind="setDataService" cardinality="1..1" interface="org.eclipse.kura.data.DataService" name="DataService" policy="static" unbind="unsetDataService"/>
    <reference bind="setGreenhouseSensorService" cardinality="1..1" interface="org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService" name="GreenhouseSensorService" policy="static" unbind="unsetGreenhouseSensorService"/>

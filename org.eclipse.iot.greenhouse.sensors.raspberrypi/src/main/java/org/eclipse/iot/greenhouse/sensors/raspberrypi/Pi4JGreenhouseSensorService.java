@@ -9,6 +9,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService;
+import org.eclipse.iot.greenhouse.sensors.SensorChangedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -160,12 +161,10 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 		}
 	}
 
-	@Override
 	public void addSensorChangedListener(SensorChangedListener listener) {
 		_listeners.add(listener);
 	}
 
-	@Override
 	public void removeSensorChangedListener(SensorChangedListener listener) {
 		_listeners.remove(listener);
 	}

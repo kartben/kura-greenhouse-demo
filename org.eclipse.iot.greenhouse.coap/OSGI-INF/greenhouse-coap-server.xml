@@ -20,6 +20,9 @@
     immediate="true">
 	<implementation class="org.eclipse.iot.greenhouse.coap.GreenhouseCoapServer"/>
  <reference bind="setGreenhouseSensorService" cardinality="1..1" interface="org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService" name="GreenhouseSensorService" policy="static" unbind="unsetGreenhouseSensorService"/>
+ <service>
+    <provide interface="org.eclipse.iot.greenhouse.sensors.SensorChangedListener"/>
+ </service>
 
    
 </scr:component>

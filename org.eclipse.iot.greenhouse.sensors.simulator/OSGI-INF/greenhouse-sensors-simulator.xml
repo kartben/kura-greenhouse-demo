@@ -8,5 +8,6 @@
    <service>
       <provide interface="org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService"/>
    </service>
+   <reference bind="addSensorChangedListener" cardinality="0..n" interface="org.eclipse.iot.greenhouse.sensors.SensorChangedListener" name="SensorChangedListener" policy="dynamic" unbind="removeSensorChangedListener"/>
    
 </scr:component>

@@ -15,7 +15,7 @@ import java.util.Map;
 
 import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService;
 import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService.NoSuchSensorOrActuatorException;
-import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService.SensorChangedListener;
+import org.eclipse.iot.greenhouse.sensors.SensorChangedListener;
 import org.eclipse.kura.KuraException;
 import org.eclipse.kura.KuraNotConnectedException;
 import org.eclipse.kura.KuraTimeoutException;
@@ -53,12 +53,10 @@ public class GreenhousePublisher implements ConfigurableComponent,
 	protected void setGreenhouseSensorService(
 			GreenhouseSensorService greenhouseSensorService) {
 		_greenhouseSensorService = greenhouseSensorService;
-		_greenhouseSensorService.addSensorChangedListener(this);
 	}
 
 	protected void unsetGreenhouseSensorService(
 			GreenhouseSensorService greenhouseSensorService) {
-		_greenhouseSensorService.removeSensorChangedListener(this);
 		_greenhouseSensorService = null;
 	}
 

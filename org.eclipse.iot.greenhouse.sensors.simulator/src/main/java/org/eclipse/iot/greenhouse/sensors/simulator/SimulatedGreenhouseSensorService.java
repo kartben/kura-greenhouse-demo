@@ -8,6 +8,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService;
+import org.eclipse.iot.greenhouse.sensors.SensorChangedListener;
 
 public class SimulatedGreenhouseSensorService implements
 		GreenhouseSensorService {
@@ -61,12 +62,10 @@ public class SimulatedGreenhouseSensorService implements
 
 	}
 
-	@Override
 	public void addSensorChangedListener(SensorChangedListener listener) {
 		_listeners.add(listener);
 	}
 
-	@Override
 	public void removeSensorChangedListener(SensorChangedListener listener) {
 		_listeners.remove(listener);
 	}
