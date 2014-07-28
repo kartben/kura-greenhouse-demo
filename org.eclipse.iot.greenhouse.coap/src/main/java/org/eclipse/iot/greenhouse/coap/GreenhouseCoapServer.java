@@ -86,7 +86,8 @@ public class GreenhouseCoapServer implements
 
 		// add the temperature sensor
 		try {
-			SensorResource temperatureResource = new SensorResource("temp");
+			SensorResource temperatureResource = new SensorResource(
+					"temperature");
 			temperatureResource.setSensorValue(""
 					+ _greenhouseSensorService.getSensorValue("temperature"));
 			_sensorsRootResource.add(temperatureResource);
