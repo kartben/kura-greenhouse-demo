@@ -1,6 +1,6 @@
 package org.eclipse.iot.greenhouse.sensors;
 
-public interface GreenhouseSensorService {
+public interface SensorService {
 	class NoSuchSensorOrActuatorException extends Exception {
 		private static final long serialVersionUID = 2612352095893222404L;
 	};

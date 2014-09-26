@@ -13,8 +13,8 @@ package org.eclipse.iot.greenhouse.coap;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
-import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService;
-import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService.NoSuchSensorOrActuatorException;
+import org.eclipse.iot.greenhouse.sensors.SensorService;
+import org.eclipse.iot.greenhouse.sensors.SensorService.NoSuchSensorOrActuatorException;
 import org.eclipse.iot.greenhouse.sensors.SensorChangedListener;
 import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ public class GreenhouseCoapServer implements SensorChangedListener {
 
 	private CoapResource _actuatorsRootResource;
 
-	private GreenhouseSensorService _greenhouseSensorService;
+	private SensorService _sensorService;
 
 	// ----------------------------------------------------------------
 	//
@@ -50,13 +50,13 @@ public class GreenhouseCoapServer implements SensorChangedListener {
 	}
 
 	protected void setGreenhouseSensorService(
-			GreenhouseSensorService greenhouseSensorService) {
-		_greenhouseSensorService = greenhouseSensorService;
+			SensorService sensorService) {
+		_sensorService = sensorService;
 	}
 
 	protected void unsetGreenhouseSensorService(
-			GreenhouseSensorService greenhouseSensorService) {
-		_greenhouseSensorService = null;
+			SensorService sensorService) {
+		_sensorService = null;
 	}
 
 	// ----------------------------------------------------------------
@@ -74,7 +74,7 @@ public class GreenhouseCoapServer implements SensorChangedListener {
 
 		// create the actuator/sensor combo for the light
 		ActuatorResource lightActuator = new ActuatorResource("light",
-				_greenhouseSensorService);
+				_sensorService);
 		SensorResource lightSensor = new SensorResource("light");
 		// TODO remove line below
 		lightSensor.setSensorValue("on");
@@ -87,7 +87,7 @@ public class GreenhouseCoapServer implements SensorChangedListener {
 			SensorResource temperatureResource = new SensorResource(
 					"temperature");
 			temperatureResource.setSensorValue(""
-					+ _greenhouseSensorService.getSensorValue("temperature"));
+					+ _sensorService.getSensorValue("temperature"));
 			_sensorsRootResource.add(temperatureResource);
 		} catch (NoSuchSensorOrActuatorException e) {
 			// TODO Auto-generated catch block

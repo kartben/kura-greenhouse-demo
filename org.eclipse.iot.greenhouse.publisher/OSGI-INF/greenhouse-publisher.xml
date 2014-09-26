@@ -19,7 +19,7 @@
     modified="updated" 
     enabled="true"
     immediate="true"
-    configuration-policy="require">
+    configuration-policy="optional">
 	<implementation class="org.eclipse.iot.greenhouse.publisher.GreenhousePublisher"/>
 
    <!-- If the component is configurable through the Kura ConfigurationService, it must expose a Service. -->
@@ -30,6 +30,6 @@
        <provide interface="org.eclipse.iot.greenhouse.sensors.SensorChangedListener"/>
    </service>
    <reference bind="setDataService" cardinality="1..1" interface="org.eclipse.kura.data.DataService" name="DataService" policy="static" unbind="unsetDataService"/>
-   <reference bind="setGreenhouseSensorService" cardinality="1..1" interface="org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService" name="GreenhouseSensorService" policy="static" unbind="unsetGreenhouseSensorService"/>
+   <reference bind="setGreenhouseSensorService" cardinality="1..1" interface="org.eclipse.iot.greenhouse.sensors.SensorService" name="GreenhouseSensorService" policy="static" unbind="unsetGreenhouseSensorService"/>
    
 </scr:component>

@@ -8,7 +8,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService;
+import org.eclipse.iot.greenhouse.sensors.SensorService;
 import org.eclipse.iot.greenhouse.sensors.SensorChangedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,7 @@ import com.pi4j.io.i2c.I2CBus;
 import com.pi4j.io.i2c.I2CDevice;
 import com.pi4j.io.i2c.I2CFactory;
 
-public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
+public class Pi4JGreenhouseSensorService implements SensorService {
 	private static final Logger s_logger = LoggerFactory
 			.getLogger(Pi4JGreenhouseSensorService.class);
 
@@ -104,7 +104,7 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 		} else if ("light".equals(sensorName)) {
 			return readLightState();
 		} else
-			throw new GreenhouseSensorService.NoSuchSensorOrActuatorException();
+			throw new SensorService.NoSuchSensorOrActuatorException();
 	}
 
 	/*
@@ -117,13 +117,6 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 		// new conversion, i.e., write CONFIG with 0x11
 		_temperatureSensor.write(0x03, (byte) 0x11);
 
-		try {
-			// waiting a bit to try to avoid getting erroneous readings once in
-			// a while
-			Thread.sleep(50);
-		} catch (InterruptedException e) {
-		}
-
 		// Poll RDY (D0) in STATUS (register 0) until it is low (=0)
 		int status = -1;
 		while ((status & 0x01) != 0) {
@@ -135,12 +128,16 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 		byte[] buffer = new byte[3];
 		_temperatureSensor.read(buffer, 0, 3);
 
-		int dataH = buffer[1];
-		int dataL = buffer[2];
+		int dataH = buffer[1] & 0xff;
+		int dataL = buffer[2] & 0xff;
+		
+		// s_logger.info("I2C: [{}, {}]", new Object[] {dataH, dataL} );
 
-		temperature = ((dataH << 8) + dataL) >> 2;
+		temperature = (dataH * 256 + dataL) >> 2;
 		temperature = (temperature / 32f) - 50f;
 
+		// s_logger.info("Temperature: {}", temperature);
+		
 		// truncate to 2 decimals
 		DecimalFormat twoDForm = new DecimalFormat("#.##");
 		return Float.valueOf(twoDForm.format(temperature));
@@ -157,7 +154,7 @@ public class Pi4JGreenhouseSensorService implements GreenhouseSensorService {
 			_lightActuator.setState("on".equals(value));
 			notifyListeners("light", value);
 		} else {
-			throw new GreenhouseSensorService.NoSuchSensorOrActuatorException();
+			throw new SensorService.NoSuchSensorOrActuatorException();
 		}
 	}
 

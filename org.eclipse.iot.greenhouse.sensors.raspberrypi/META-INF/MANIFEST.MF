@@ -13,4 +13,3 @@ Bundle-ClassPath: .,
  libs/pi4j-core.jar,
  libs/pi4j-device.jar,
  libs/pi4j-gpio-extension.jar
-Bundle-NativeCode: native/libpi4j.so;osname=linux

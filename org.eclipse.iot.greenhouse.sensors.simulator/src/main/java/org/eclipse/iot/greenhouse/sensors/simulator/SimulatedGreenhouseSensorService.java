@@ -7,11 +7,11 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService;
+import org.eclipse.iot.greenhouse.sensors.SensorService;
 import org.eclipse.iot.greenhouse.sensors.SensorChangedListener;
 
 public class SimulatedGreenhouseSensorService implements
-		GreenhouseSensorService {
+		SensorService {
 
 	private ScheduledThreadPoolExecutor _scheduledThreadPoolExecutor;
 	private ScheduledFuture<?> _handle;
@@ -48,7 +48,7 @@ public class SimulatedGreenhouseSensorService implements
 		else if ("light".equals(sensorName))
 			return _lightState;
 		else
-			throw new GreenhouseSensorService.NoSuchSensorOrActuatorException();
+			throw new SensorService.NoSuchSensorOrActuatorException();
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class SimulatedGreenhouseSensorService implements
 			_lightState = (String) value;
 			notifyListeners("light", value);
 		} else
-			throw new GreenhouseSensorService.NoSuchSensorOrActuatorException();
+			throw new SensorService.NoSuchSensorOrActuatorException();
 
 	}
 

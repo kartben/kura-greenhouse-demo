@@ -13,8 +13,8 @@ package org.eclipse.iot.greenhouse.publisher;
 
 import java.util.Map;
 
-import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService;
-import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService.NoSuchSensorOrActuatorException;
+import org.eclipse.iot.greenhouse.sensors.SensorService;
+import org.eclipse.iot.greenhouse.sensors.SensorService.NoSuchSensorOrActuatorException;
 import org.eclipse.iot.greenhouse.sensors.SensorChangedListener;
 import org.eclipse.kura.KuraException;
 import org.eclipse.kura.KuraNotConnectedException;
@@ -36,7 +36,7 @@ public class GreenhousePublisher implements ConfigurableComponent,
 	private static final String PUBLISH_RETAIN_PROP_NAME = "publish.retain";
 
 	private DataService _dataService;
-	private GreenhouseSensorService _greenhouseSensorService;
+	private SensorService _sensorService;
 
 	private Map<String, Object> _properties;
 
@@ -51,13 +51,13 @@ public class GreenhousePublisher implements ConfigurableComponent,
 	}
 
 	protected void setGreenhouseSensorService(
-			GreenhouseSensorService greenhouseSensorService) {
-		_greenhouseSensorService = greenhouseSensorService;
+			SensorService sensorService) {
+		_sensorService = sensorService;
 	}
 
 	protected void unsetGreenhouseSensorService(
-			GreenhouseSensorService greenhouseSensorService) {
-		_greenhouseSensorService = null;
+			SensorService sensorService) {
+		_sensorService = null;
 	}
 
 	public void setDataService(DataService dataService) {
@@ -146,7 +146,7 @@ public class GreenhousePublisher implements ConfigurableComponent,
 		if (topicFragments[2].equals("actuators")
 				&& topicFragments[3].equals("light")) {
 			try {
-				_greenhouseSensorService.setActuatorValue("light", new String(
+				_sensorService.setActuatorValue("light", new String(
 						payload));
 			} catch (NoSuchSensorOrActuatorException e) {
 				// TODO Auto-generated catch block

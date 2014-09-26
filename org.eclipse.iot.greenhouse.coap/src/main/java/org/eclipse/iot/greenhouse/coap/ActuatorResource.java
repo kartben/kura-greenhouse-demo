@@ -3,19 +3,19 @@ package org.eclipse.iot.greenhouse.coap;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService;
-import org.eclipse.iot.greenhouse.sensors.GreenhouseSensorService.NoSuchSensorOrActuatorException;
+import org.eclipse.iot.greenhouse.sensors.SensorService;
+import org.eclipse.iot.greenhouse.sensors.SensorService.NoSuchSensorOrActuatorException;
 
 public class ActuatorResource extends CoapResource {
-	private GreenhouseSensorService _greenhouseSensorService;
+	private SensorService _greenhouseSensorService;
 	// an actuator might also allow its status to be GET, in that case it has an
 	// associated SensorResource
 	private SensorResource _sensorResource;
 
 	public ActuatorResource(String name,
-			GreenhouseSensorService greenhouseSensorService) {
+			SensorService sensorService) {
 		super(name);
-		_greenhouseSensorService = greenhouseSensorService;
+		_greenhouseSensorService = sensorService;
 	}
 
 	@Override
