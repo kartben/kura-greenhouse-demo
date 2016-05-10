@@ -174,8 +174,8 @@ public class GreenhousePublisher implements ConfigurableComponent,
 		Integer qos = (Integer) _properties.get(PUBLISH_QOS_PROP_NAME);
 		Boolean retain = (Boolean) _properties.get(PUBLISH_RETAIN_PROP_NAME);
 
-		String topic = prefix + "sensors/" + sensorName;
-		String payload = newValue.toString();
+		String topic = prefix ;// + "sensors/" + sensorName;
+		String payload = String.format("{ \"%s\": \"%s\" }", sensorName, newValue.toString()); // {"temp":19.82}
 
 		try {
 

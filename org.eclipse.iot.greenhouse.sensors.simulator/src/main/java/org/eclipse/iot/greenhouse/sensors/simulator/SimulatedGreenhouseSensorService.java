@@ -30,13 +30,14 @@ public class SimulatedGreenhouseSensorService implements
 					@Override
 					public void run() {
 						_temperature = 20 + new Random().nextFloat() * 10;
+						_temperature = Math.round(_temperature * 100) / 100f;
 						notifyListeners("temperature", _temperature);
 
 						_lightState = (new Random().nextInt(10) < 8) ? "on"
 								: "off";
 						notifyListeners("light", _lightState);
 					}
-				}, 0, 1000, TimeUnit.MILLISECONDS);
+				}, 0, 60000, TimeUnit.MILLISECONDS);
 
 	}
 
